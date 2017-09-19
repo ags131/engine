@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var q = require('q'),
+var Promise = require('bluebird'),
     _ = require('lodash'),
     util = require('util'),
     utils = require('./utils'),
@@ -49,12 +49,12 @@ function runUser(userId, onlyInRoom) {
         if(runResult.intents) {
             promises.push(driver.saveUserIntents(userId, runResult.intents));
         }
-        return q.all(promises)
+        return Promise.all(promises)
         .then(() => {
             driver.config.emit('runnerLoopStage','saveResultFinish', runResult);
             //driver.influxAccumulator.mark('saveUser');
             if(runResult.error) {
-                return q.reject(runResult.error);
+                return Promise.reject(runResult.error);
             }
         })
     }
@@ -106,10 +106,12 @@ driver.connect('runner')
 
 
 if(typeof self == 'undefined') {
+    /*
     setInterval(() => {
         var rejections = q.getUnhandledReasons();
         rejections.forEach((i) => console.error('Unhandled rejection:', i));
         q.resetUnhandledRejections();
     }, 1000);
+    */
 }
 

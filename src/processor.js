@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var q = require('q'),
+var Promise = require('bluebird'),
     _ = require('lodash'),
     movement = require('./processor/intents/movement'),
     utils = require('./utils'),
@@ -7,11 +7,11 @@ var q = require('q'),
     C = driver.constants,
     config = require('./config');
 
-var roomsQueue, usersQueue, lastRoomsStatsSaveTime = 0, currentHistoryPromise = q.when();
+var roomsQueue, usersQueue, lastRoomsStatsSaveTime = 0, currentHistoryPromise = Promise.resolve();
 
 function processRoom(roomId, {intents, objects, users, terrain, gameTime, roomInfo, flags}) {
 
-    return q.when().then(() => {
+    return Promise.resolve().then(() => {
 
         var bulk = driver.bulkObjectsWrite(),
             userBulk = driver.bulkUsersWrite(),
@@ -375,14 +375,14 @@ function processRoom(roomId, {intents, objects, users, terrain, gameTime, roomIn
             lastRoomsStatsSaveTime = Date.now();
         }
 
-        return q.all(resultPromises);
+        return Promise.all(resultPromises);
     });
 }
 
 function saveRoomHistory(roomId, objects, gameTime) {
 
     return currentHistoryPromise.then(() => {
-        var promise = q.when();
+        var promise = Promise.resolve();
 
         if (!(gameTime % driver.config.historyChunkSize)) {
             var baseTime = Math.floor((gameTime - 1) / driver.config.historyChunkSize) * driver.config.historyChunkSize;
@@ -411,7 +411,7 @@ driver.connect('processor').then(() => driver.queue.create('rooms', 'read'))
             .then((_roomId) => {
                 driver.config.emit('processorLoopStage','getRoomData', _roomId);
                 roomId = _roomId;
-                return q.all([
+                return Promise.all([
                     driver.getRoomIntents(_roomId),
                     driver.getRoomObjects(_roomId),
                     driver.getRoomTerrain(_roomId),
@@ -452,9 +452,11 @@ driver.connect('processor').then(() => driver.queue.create('rooms', 'read'))
 
 
 if(typeof self == 'undefined') {
+    /*
     setInterval(() => {
         var rejections = q.getUnhandledReasons();
         rejections.forEach((i) => console.error('Unhandled rejection:', i));
         q.resetUnhandledRejections();
     }, 1000);
+    */
 }

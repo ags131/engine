@@ -1,4 +1,4 @@
-var q = require('q'),
+var Promise = require('bluebird'),
     _ = require('lodash'),
     utils = require('../utils'),
     driver = utils.getDriver(),
@@ -521,7 +521,7 @@ module.exports.execute = function(market, gameTime, terminals, bulkObjects) {
         });
     }
 
-    return q.all([
+    return Promise.all([
         bulkUsers.execute(),
         bulkMarketOrders.execute(),
         bulkUsersMoney.execute(),

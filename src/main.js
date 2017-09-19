@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var q = require('q'),
+var Promise = require('bluebird'),
     _ = require('lodash'),
     usersQueue, roomsQueue,
     utils = require('./utils'),
@@ -122,7 +122,7 @@ function loop() {
 }
 
 driver.connect('main')
-    .then(() =>  q.all([
+    .then(() =>  Promise.all([
         driver.queue.create('users', 'write'),
         driver.queue.create('rooms', 'write')
     ]))
